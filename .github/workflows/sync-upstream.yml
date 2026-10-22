@@ -1,0 +1,25 @@
+name: Sync fork with upstream
+
+# Keeps thc-prophet/mempalace main up to date with MemPalace/mempalace main.
+# Runs daily and on demand (Actions tab > Sync fork with upstream > Run workflow).
+# Note: if upstream changes its own workflow files, GITHUB_TOKEN may not be
+# allowed to merge them; Oracle's `mempalace sync` command catches up instead.
+
+on:
+  schedule:
+    - cron: '17 9 * * *'   # daily 09:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.repository == 'thc-prophet/mempalace'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge upstream main into fork main
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          gh api -X POST "repos/${{ github.repository }}/merge-upstream" -f branch=main
